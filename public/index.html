@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"/>
+  <style>
+    .inp-cls{
+      height: 30px;
+      width: 200px;
+    }
+    .textarea-cls{
+      height: 80px;
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <button onclick="popInfo()">结束录制</button>
+    <h1>这里模拟一些html代码：</h1>
+    <p id="lName">
+      <label>用户名</label><input class="inp-cls" type="text"></input>
+    </p>
+    <p>
+      <label>密码</label><input class="inp-cls" type="password"></input>
+    </p>
+    <p>
+      <label>邮箱</label><input class="inp-cls" type="email"></input>
+    </p>
+    <p>
+      <label>备注</label><textarea class="textarea-cls"></textarea>
+    </p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+  <script type="text/javascript">
+    // 发送websocket
+    // const socket = new WebSocket('ws://localhost:8181');
+    // socket.addEventListener('open', function (event) {
+    //   socket.send('rrweb接入');
+    // });
+
+    // rrweb行为录制
+    let events = [];
+    function record () {
+      rrweb.record({
+        emit(event) {
+          // 用任意方式存储 event
+          events.push(event);
+        },
+      });
+    }
+
+    function videoInfo () {
+      const strReplay = JSON.stringify({
+        type: 'socketMessage',
+        data: events
+      })
+      socket.send(strReplay)
+    }
+
+    function popInfo () {
+      fetch('/mock/setEventInfo', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify({
+          str: events
+        })
+      }).then(res => {
+        res.json().then(obj => {
+          console.log(obj)
+        })
+      })
+    }
+
+    window.onload = function () {
+      record()
+    }
+  </script>
+</body>
+</html>

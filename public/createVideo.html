@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<body>
+  <div class="video-area">
+    <p>视频播放区域</p>
+    <canvas id="drawArea" width="2880" height="1800" style="width: 1440px;height: 900px;"></canvas>
+  </div>
+  <script type="text/javascript">
+    // 录制视频
+    var data = []
+    var canvas = document.getElementById('drawArea')
+    // 创建一个MediaStream
+    const stream = canvas.captureStream()
+    // 创建一个对指定的MediaStream进行录制的MediaRecorder
+    const recorder = new MediaRecorder(stream, {mimeType: 'video/webm'})
+    // 录像结束后的回调，写入数据
+    recorder.ondataavailable = function (event) {
+      if (event.data && event.data.size) {
+        data.push(event.data)
+      }
+    }
+    recorder.onstop = () => {
+      const url = URL.createObjectURL(new Blob(data, { type: 'video/webm' }));
+      let newVideo = document.createElement('video')
+      newVideo.width = 1000
+      newVideo.height = 900
+      newVideo.playbackRate = 1
+      newVideo.controls = true
+      newVideo.src = url
+      document.body.append(newVideo)
+    }
+    // 录制视频
+    function recordVideo () {
+      recorder.start()
+    }
+    // 停止录制
+    function stopRecord () {
+      recorder.stop()
+    }
+    var canvasDom = canvas.getContext('2d')
+
+    // 循环播放图片
+    let imgI = 0
+    let maxI = 0
+    function nextImage () {
+      let newImg = new Image()
+      newImg.src = `./images/test${imgI}.png`
+      newImg.onload = function () {
+        canvasDom.drawImage(newImg, 0, 0, canvas.width, canvas.height)
+      }
+      if (imgI >= maxI) {
+        stopRecord()
+        return
+      }
+      setTimeout(() => {
+        imgI++
+        nextImage()
+      }, 100)
+    }
+    // 请求数据返回
+    fetch('/mock/imgLength').then(res => {
+      res.json().then(obj => {
+        imgI = 0
+        maxI = obj.data || 0
+        recordVideo()
+        nextImage()
+      })
+    })
+  </script>
+</body>
+</html>

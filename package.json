@@ -1,0 +1,21 @@
+{
+  "name": "webtovideo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "open": "^7.4.0",
+    "puppeteer": "^6.0.0",
+    "ws": "^7.4.3"
+  },
+  "devDependencies": {
+    "body-parser": "^1.19.0",
+    "fs": "0.0.1-security"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

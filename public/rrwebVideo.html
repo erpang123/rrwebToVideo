@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<head>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.css"/>
+</head>
+<body>
+  <div>
+    <div id="playback"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+  <script type="text/javascript">
+    let events = []
+    fetch('/mock/pageUrl').then(res => {
+      res.json().then(data => {
+        events = data.data
+        replay()
+      })
+    }).catch(err => {
+      console.log(err)
+    })
+    function replay () {
+      new rrwebPlayer({
+        target: document.getElementById('playback'), // 可以自定义 DOM 元素
+        data: {
+          events,
+        }
+      });
+    }
+  </script>
+</body>
+</html>
