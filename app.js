@@ -4,8 +4,6 @@ const open = require('open');
 const bodyParser = require('body-parser');//用于req.body获取值的
 const express = require('express')
 const app = express()
-// var ws = require('ws').Server;
-// var wss = new ws({port: 8181});
 app.use(express.static('public'))
 
 // 解析 application/x-www-form-urlencoded
@@ -13,43 +11,37 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // 解析 application/json
 app.use(bodyParser.json());
 
-// 生成指定目录下的文件夹
-fs.readdir('./public/img', function (err, data) {
-  console.log(err, data)
-  if (data) {
-    fs.rmdirSync('./public/img')
-  } else {
-    fs.mkdirSync('./public/img')
-  }
-})
-
 var router = express.Router()
-
+// 参数
 let dataStr = ''
 let allT = 0 // 总时长
-let sLength = 10 // 1秒几张图片
-// websocket连接
-// wss.on('connection', function (ws) {
-//   console.log('client connected')
-//   ws.on('message', function (message) {
-//     if (message.indexOf('{') >= 0) {
-//       const data = JSON.parse(message).data || ''
-//       dataStr = data || ''
-//       if (Array.isArray(data) && data.length > 1) {
-//         const firstT = data[0].timestamp
-//         const lastT = data[data.length - 1].timestamp
-//         const hasT = Math.floor((lastT - firstT) / 1000)
-//         console.log(hasT)
-//         startPupp(hasT)
-//       }
-//     }
-//     wss.clients.forEach(function (client) {
-//       client.send(message)
-//     })
-//   })
-// })
-// 截屏函数
+const sLength = 10 // 1秒几张图片
+const port = 4000
+const addRess = `http://127.0.0.1:${port}/`
+const fileUrl = './public/images'
+
+// 图片目录是否存在
 const startPupp = () => {
+  // 生成指定目录下的文件夹
+  fs.readdir(fileUrl, function (err, data) {
+    // 如果文件夹存在的话，删除文件夹内的所有文件
+    if (data) {
+      let files = fs.readdirSync(fileUrl)
+      files.forEach(function(file) {
+        let fileName = fileUrl + '/' + file
+        let stat = fs.statSync(fileName)
+        if (!stat.isDirectory()) {
+          fs.unlinkSync(fileName)
+        }
+      })
+    } else {
+      fs.mkdirSync(fileUrl)
+    }
+    loopCreateImg()
+  })
+}
+// 截屏函数
+const loopCreateImg = function () {
   (async () => {
     const browser = await puppeteer.launch({
       headless: false
@@ -57,19 +49,27 @@ const startPupp = () => {
     for (let nowI = 0; nowI <= allT * sLength; nowI++) {
       let page = await browser.newPage()
       let waitTime = nowI * (1000 / sLength)
-      await page.goto('http://127.0.0.1:4000/rrwebVideo.html')
+      await page.goto(`${addRess}rrwebVideo.html`)
       await page.setViewport({
         width: 1920,
         height: 1080
       })
-      await page.click('#replayBtn')
-      await page.waitForTimeout(waitTime)
-      await page.screenshot({
-        path: `./public/images/test${nowI}.png`
+      await page.addScriptTag({
+        content: `
+          window.onload = function () {
+            var replayer = new rrweb.Replayer(events);
+            replayer.play(${waitTime});
+            console.log(rrweb)
+          }
+        `
       })
-      page.close()
+      await page.waitForTimeout(20000)
+      await page.screenshot({
+        path: `${fileUrl}/test${nowI}.png`
+      })
+      // page.close()
     }
-    open('http://127.0.0.1:4000/createVideo.html')
+    open(`${addRess}createVideo.html`)
   })();
 }
 
@@ -106,7 +106,7 @@ router.get('/imgLength', function (req, res) {
 
 app.use('/mock', router)
 
-app.listen(4000, function () {
-  console.log('4000开启成功')
-  open('http://127.0.0.1:4000/')
+app.listen(port, function () {
+  console.log(port + '开启成功')
+  open(addRess)
 })
