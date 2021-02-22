@@ -11,21 +11,25 @@
   <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
   <script type="text/javascript">
     let events = []
+    let startTime = 0 // 指定时间点开始播放，页面结构有缺失
     fetch('/mock/pageUrl').then(res => {
       res.json().then(data => {
-        events = data.data
-        // replay()
+        events = data.data.data
+        startTime = data.data.waitTime
+        replay()
       })
     }).catch(err => {
       console.log(err)
     })
     function replay () {
-      new rrwebPlayer({
+      let replayer = new rrwebPlayer({
         target: document.getElementById('playback'), // 可以自定义 DOM 元素
-        data: {
+        props: {
           events,
+          showController: false
         }
       });
+      replayer.goto(startTime);
     }
   </script>
 </body>

@@ -14,3 +14,7 @@ canvas转换视频需要用到`captureStream`和`mediaRecorder`，将画布转�
 
 `captureStream`的文档：https://developer.mozilla.org/zh-CN/docs/Web/API/HTMLCanvasElement/%E6%8D%95%E8%8E%B7%E6%B5%81
 `mediaRecorder`的文档：https://developer.mozilla.org/zh-CN/docs/Web/API/MediaRecorder
+
+### 问题
+1. 现在的截屏是等待rrweb播放到指定时间后进行的截屏，这样的话在录制时间很长的情况下，截屏也会消耗很长的时间。
+2. 考虑想缩短截屏的时间，查看源码发现`rrwebPlayer`中有个`goto`方法跳转到指定时间播放,但在使用中发现在跳转时间时，输入框切换后之前的输入框的输入会被清空掉。若不考虑输入的问题的话可以使用这个方法缩短截屏时间。
